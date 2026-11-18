@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  password  String
+  createdAt DateTime @default(now())
+  stores    Store[]
+}
+
+model Store {
+  id            String     @id @default(cuid())
+  ownerId       String
+  owner         User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name          String
+  slug          String     @unique
+  category      String     @default("General")
+  description   String     @default("")
+  logoUrl       String?
+  bannerUrl     String?
+  primaryColor  String     @default("#3366ff")
+  whatsapp      String?
+  email         String?
+  instagram     String?
+  facebook      String?
+  tiktok        String?
+  address       String?
+  plan          String     @default("gratis")
+  customDomain  String?
+  // Pagos
+  payYape       Boolean    @default(true)
+  yapeNumber    String?
+  payPlin       Boolean    @default(false)
+  plinNumber    String?
+  payTransfer   Boolean    @default(false)
+  bankInfo      String?
+  payCard       Boolean    @default(false)
+  payCash       Boolean    @default(true)
+  // Envíos
+  shippingLima     Float   @default(10)
+  shippingProvince Float   @default(20)
+  freeShippingFrom Float?
+  pickupEnabled    Boolean @default(true)
+  published     Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  categories    Category[]
+  products      Product[]
+  orders        Order[]
+  coupons       Coupon[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  storeId  String
+  store    Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name     String
+  products Product[]
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  storeId     String
+  store       Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  categoryId  String?
+  category    Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  name        String
+  description String      @default("")
+  price       Float
+  salePrice   Float?
+  stock       Int         @default(0)
+  sku         String?
+  imageUrl    String?
+  active      Boolean     @default(true)
+  featured    Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  code           String      @unique
+  storeId        String
+  store          Store       @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  customerName   String
+  customerPhone  String
+  customerEmail  String?
+  customerDoc    String?
+  deliveryType   String      @default("envio") // envio | recojo
+  department     String?
+  district       String?
+  address        String?
+  reference      String?
+  notes          String?
+  paymentMethod  String
+  status         String      @default("pendiente")
+  subtotal       Float
+  discount       Float       @default(0)
+  shipping       Float       @default(0)
+  total          Float
+  couponCode     String?
+  createdAt      DateTime    @default(now())
+  items          OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  name      String
+  price     Float
+  quantity  Int
+}
+
+model Coupon {
+  id        String   @id @default(cuid())
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  code      String
+  type      String   @default("porcentaje") // porcentaje | monto
+  value     Float
+  minAmount Float    @default(0)
+  active    Boolean  @default(true)
+  uses      Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@unique([storeId, code])
+}
