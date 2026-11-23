@@ -45,3 +45,15 @@ Producción: `npm run build && npm start`.
 - Los pagos con tarjeta y los cambios de plan están en **modo demostración**. Para producción, integra las llaves de Culqi, Izipay o Niubiz en `src/app/actions/shop.ts`.
 - Las imágenes subidas se guardan en `uploads/` y se sirven desde `/api/files/...`.
 - Para producción con varios servidores, cambia SQLite por PostgreSQL en `prisma/schema.prisma`.
+
+## Pruebas automáticas (Playwright)
+
+Pruebas de punta a punta en escritorio y móvil: sitio público, login, registro y creación de tienda, panel (productos, pedidos, cupones, configuración) y compra completa en la tienda.
+
+```bash
+npx playwright install chromium   # solo la primera vez
+npm run test:e2e                  # enciende el servidor si no está corriendo
+npx playwright show-report        # ver el reporte HTML
+```
+
+> Antes de cada corrida se ejecuta `npm run setup`, que reinicia los datos de demostración.
